@@ -8,6 +8,13 @@ GET_FILENAME_COMPONENT(SOURCE_BASE_DIR ${CMAKE_SOURCE_DIR} PATH CACHE)
 #  global setup
 project(lensfun C CXX)
 
+# GNU install directories
+include(GNUInstallDirs)
+
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "Using toolchain file ${CMAKE_TOOLCHAIN_FILE}")
+endif()
+
 IF (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 ELSE()
@@ -102,7 +109,33 @@ IF (BUILD_TESTS)
   FIND_PACKAGE(GLIB2 REQUIRED)
 ELSE()
   SET(LENSFUN_GLIB_REQUIREMENT_MACRO "GLIB_VERSION_2_26")
-  FIND_PACKAGE(GLIB2 REQUIRED)
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(GLIB2 QUIET glib-2.0)
+    endif()
+
+    if(WIN32 AND NOT BUILD_STATIC)
+        find_file(GLIB2_DLL
+            NAMES glib-2.dll glib-2-vs9.dll libglib-2.0-0.dll
+            HINTS ${GLIB2_LIBRARY_DIRS}/../bin $ENV{VCPKG_ROOT}
+            PATH_SUFFIXES glib bin)
+    endif()
+
+    find_library(GLIB2_LIBRARIES
+        NAMES glib glib-2.0
+        PATH GLIB_LIBRARY_DIR)
+
+    find_path(GLIB2_GLIB2CONFIG_INCLUDE_PATH
+        NAMES glibconfig.h
+        PATH GLIBCONF_INCLUDE_DIR)
+
+    find_path(GLIB2_INCLUDE_DIRS
+        NAMES glib.h
+        PATH GLIB2_INCLUDE_DIR)
+
+    if(NOT GLIB2_LIBRARIES OR NOT GLIB2_INCLUDE_DIRS OR NOT GLIB2_GLIB2CONFIG_INCLUDE_PATH )
+            message(WARNING "Not sure if I found GLIB, continuing anyway.")
+    endif()
 ENDIF()
 
 INCLUDE_DIRECTORIES(SYSTEM ${GLIB2_INCLUDE_DIRS})

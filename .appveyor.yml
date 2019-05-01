@@ -1,0 +1,55 @@
+image: Visual Studio 2017
+clone_depth: 1
+configuration:
+  - Release
+  - Debug
+cache:
+  - C:\tools\vcpkg\
+  - c:\msys64\var\cache\pacman\
+environment:
+  global:
+    pacman_flags: --needed --noconfirm --ask=20 --color always
+    VCPKG_ROOT: C:\Tools\vcpkg
+    APPVEYOR_SAVE_CACHE_ON_ERROR: "true"
+  matrix:
+    - generator: Visual Studio 15 2017 Win64
+      cmake_eflags: -DBUILD_STATIC=ON
+    - generator: Visual Studio 15 2017 Win64
+    #- generator: Visual Studio 14 2015 Win64
+    - generator: Unix Makefiles
+    - generator: Unix Makefiles
+      cmake_eflags: -DBUILD_STATIC=ON
+install:
+  - if "%bits%"=="32" (set bitness=mingw-w64-i686-) else (set bitness=mingw-w64-x86_64-)
+  - if "%generator%"=="Unix Makefiles" (
+      set "PATH=C:\msys64\mingw64\bin;C:\msys64\mingw32\bin;C:\msys64\usr\bin;%Path%" &&
+      bash -lc exit >nul &&
+      pacman -Sqyyuu %pacman_flags% &&
+      pacman -Squ %pacman_flags% &&
+      pacman -Sq %pacman_flags% %bitness%cmake %bitness%libpng %bitness%libxml2 %bitness%toolchain %bitness%glib2
+    ) else (
+      cd C:\Tools\vcpkg &&
+      git pull -q &&
+      .\bootstrap-vcpkg.bat &&
+      vcpkg install glib:x64-windows
+    )
+  - if "%generator:~0,6%"=="Visual" set "cmake_build_flags=/logger:^"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll^" %cmake_build_flags%"
+  - mkdir build && cd build
+  - if NOT "%generator%"=="Unix Makefiles" set "cmake_eflags=-DCMAKE_TOOLCHAIN_FILE=c:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake %cmake_eflags%" &&
+    cmake .. -G"%generator%" -DCMAKE_BUILD_TYPE=%Configuration% %cmake_eflags%
+# /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+build_script:
+  - cmake --build . --config %Configuration% -- %cmake_build_flags%
+  - cmake --build . --target install --config %Configuration% -- %cmake_build_flags%
+
+
+#artifacts:
+
+#deploy:
+#  - provider: GitHub
+#    artifact: $(APPVEYOR_PROJECT_NAME)
+#    auth_token:
+#      secure: 'sf0pQXlPI+X6LoAR8QUJB74jjzNxcLGOXI3H0nbxJq8llvGPG/TAUd87hq5iHZXo'
+#    prerelease: true
+#    on:
+#      appveyor_repo_tag: true
