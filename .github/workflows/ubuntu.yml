@@ -15,6 +15,7 @@ jobs:
           - clang++-10
     env:
       CXX: ${{ matrix.CXX }}
+      DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Install dependencies
         run: sudo apt-get install -qq cmake doxygen libpng-dev libxml2-utils docutils-common libomp-dev lcov ccache
