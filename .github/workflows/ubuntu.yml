@@ -1,0 +1,21 @@
+name: Linux tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gcc-9build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        CXX:
+          - g++-9
+          - g++-6
+          - clang++-9
+      fail-fast: true
+    env:
+      CXX: ${{ matrix.CXX }}
+    steps:
+      - name: echo CXX
+        run: echo $CXX
