@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  gcc-9build:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
