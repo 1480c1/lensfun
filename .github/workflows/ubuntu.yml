@@ -16,7 +16,6 @@ jobs:
         build_type:
           - Release
           - Debug
-          - Coverage
         BUILD_STATIC:
           - "ON"
           - "OFF"
@@ -28,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt-get install -qq cmake doxygen libpng-dev libxml2-utils docutils-common libomp-dev lcov ccache
+        run: sudo apt-get install -qq cmake doxygen libpng-dev libxml2-utils docutils-common libomp-dev lcov
       - name: Install compiler
         run: |
           case "$CXX" in
@@ -45,11 +44,11 @@ jobs:
       - name: Before build
         run: |
           mkdir -p build
+          cd build
       - name: CMake
         run: |
-          cmake -S . -B build -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=$build_type -DBUILD_STATIC=$BUILD_STATIC -DBUILD_TESTS=ON -DBUILD_DOC=ON -DBUILD_LENSTOOL=ON
-      - run: make -C build -j
-      - run: sudo make -C build install
-      - run: make -C build docs
-      - name: CTest
-        run: cd build && ctest && cd -
+          cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=$build_type -DBUILD_STATIC=$BUILD_STATIC -DBUILD_TESTS=ON -DBUILD_DOC=ON -DBUILD_LENSTOOL=ON
+      - run: make -j
+      - run: make docs
+      - run: sudo make  install
+      - run: ctest
