@@ -44,11 +44,9 @@ jobs:
       - name: Before build
         run: |
           mkdir -p build
-          cd build
       - name: CMake
-        run: |
-          cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=$build_type -DBUILD_STATIC=$BUILD_STATIC -DBUILD_TESTS=ON -DBUILD_DOC=ON -DBUILD_LENSTOOL=ON
-      - run: make -j
-      - run: make docs
-      - run: sudo make  install
-      - run: ctest
+        run: cmake -S . -B build -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=$build_type -DBUILD_STATIC=$BUILD_STATIC -DBUILD_TESTS=ON -DBUILD_DOC=ON -DBUILD_LENSTOOL=ON
+      - run: make -C build -j
+      - run: sudo make -C build install
+      - run: make -C build docs
+      - run: cd build && ctest && cd -
