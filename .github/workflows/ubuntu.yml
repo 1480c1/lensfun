@@ -13,7 +13,6 @@ jobs:
           - g++-9
           - g++-6
           - clang++-10
-      fail-fast: true
     env:
       CXX: ${{ matrix.CXX }}
     steps:
