@@ -18,10 +18,16 @@ jobs:
       CXX: ${{ matrix.CXX }}
     steps:
       - name: Install dependencies
-        run: sudo apt-get install -y cmake doxygen libpng-dev libxml2-utils docutils-common libomp-dev lcov ccache
+        run: sudo apt-get install -qq cmake doxygen libpng-dev libxml2-utils docutils-common libomp-dev lcov ccache
       - name: Install compiler
         run: |
           case "$CXX" in
           g++-9) sudo apt-get install -qq gcc-9 g++-9 ;;
-          clang++-10) sudo apt-get install -qq clang-10 ;;
+          clang++-10)
+            echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main" |
+              sudo tee -a /etc/apt/sources.list.d/llvm.list
+            curl -L https://apt.llvm.org/llvm-snapshot.gpg.key |
+              sudo apt-key add -
+            sudo apt-get update
+            sudo apt-get install -qq clang-10 ;;
           esac
