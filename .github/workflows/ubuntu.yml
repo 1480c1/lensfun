@@ -41,9 +41,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -qq clang-10 ;;
           esac
-      - name: Before build
-        run: |
-          mkdir -p build
+      - run: mkdir build
       - name: CMake
         run: cmake -S . -B build -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=$build_type -DBUILD_STATIC=$BUILD_STATIC -DBUILD_TESTS=ON -DBUILD_DOC=ON -DBUILD_LENSTOOL=ON
       - run: make -C build -j
